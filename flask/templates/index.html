@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Google Dorks Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Google Dorks Search</h1>
+    <form id="search-form">
+        <textarea id="dorks" rows="10" cols="50"></textarea>
+        <br/>
+        <input type="submit" value="Search">
+    </form>
+    <div class="pagination">
+        <input type="button" id="prev" value="Previous">
+        <input type="button" id="next" value="Next">
+        </div>
+    <div id="results"></div>
+    <div class="pagination">
+    <input type="button" id="prev" value="Previous">
+    <input type="button" id="next" value="Next">
+    </div>
+    <script>
+        var start = 1;
+        var dorks = [];
+        
+        function fetchResults(start) {
+            $.ajax({
+                url: "/",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({"dorks": dorks, "start": start}),
+                success: function(response) {
+                    $("#results").empty();
+                    $.each(response.results, function(index, result) {
+                        $("#results").append("<h2>" + result.title + "</h2><p>" + result.link + "</p><p class='snippet'>" + result.snippet + "</p>");
+                    });
+                },
+                error: function(response) {
+                    console.log(response);
+                }
+            });
+        }
+        
+        $(document).ready(function(){
+            $("#search-form").on("submit", function(event) {
+                event.preventDefault();
+                dorks = $("#dorks").val().split('\n');
+                start = 1;
+                fetchResults(start);
+            });
+
+            $("#next").on("click", function() {
+                start += 10;  // Adjust this number based on your pagination size
+                fetchResults(start);
+            });
+
+            $("#prev").on("click", function() {
+                start = Math.max(start - 10, 1);  // Adjust this number based on your pagination size
+                fetchResults(start);
+            });
+        });
+    </script>
+</body>
+</html>
